@@ -1,0 +1,27 @@
+name: Bump pinned guides
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Refresh pins from each tool repository
+        run: scripts/bump-guides.sh > "$RUNNER_TEMP/notes.md"
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          branch: bump-guides
+          add-paths: skills/iam-tools/SKILL.md
+          commit-message: "chore: bump pinned tool guides"
+          title: "chore: bump pinned tool guides"
+          body-path: ${{ runner.temp }}/notes.md
